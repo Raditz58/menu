@@ -11,6 +11,7 @@ import AdminProducts from './pages/admin/Products';
 import AdminTables from './pages/admin/Tables';
 
 import StaffDashboard from './pages/staff/StaffDashboard';
+import StaffLayout from './layouts/StaffLayout';
 
 // Simple dashboard home
 import DashboardHome from './pages/admin/DashboardHome';
@@ -66,13 +67,15 @@ function App() {
             </Route>
 
             <Route 
-              path="/staff/dashboard" 
+              path="/staff" 
               element={
                 <ProtectedRoute allowedRoles={['kitchen', 'service', 'cashier']}>
-                  <StaffDashboard />
+                  <StaffLayout />
                 </ProtectedRoute>
               } 
-            />
+            >
+              <Route path="dashboard" element={<StaffDashboard />} />
+            </Route>
 
             <Route path="/" element={<RootRedirect />} />
             <Route path="*" element={<NotFound />} />
