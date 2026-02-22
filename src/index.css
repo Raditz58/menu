@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Staff/Admin Palette (Professional, Dark, Clean) */
+    --admin-bg: #1a1f2e;
+    --admin-surface: #252d3f;
+    --admin-primary: #3b82f6;
+    --admin-accent: #60a5fa;
+    --admin-text: #e5e7eb;
+    --admin-text-muted: #9ca3af;
+    --admin-success: #10b981;
+    --admin-warning: #f59e0b;
+    --admin-danger: #ef4444;
+
+    /* Customer Menu Palette (Premium, Classy, Dark) */
+    --menu-bg: #121212;
+    --menu-surface: #1E1E1E;
+    --menu-primary: #D4AF37;
+    --menu-accent: #C5A028;
+    --menu-text: #F3F4F6;
+    --menu-text-muted: #9CA3AF;
+    --menu-border: #2D2D2D;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 font-sans antialiased;
+  }
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
