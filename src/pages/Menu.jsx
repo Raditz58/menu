@@ -401,24 +401,33 @@ export default function Menu() {
             </div>
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Language Toggle */}
             <button
               onClick={toggleLanguage}
-              className="p-2 hover:bg-menu-bg rounded-full transition-colors"
+              className="p-2 hover:bg-menu-bg rounded-full transition-colors flex items-center"
               title="Change Language"
             >
-              <Globe size={20} className="text-menu-text-muted" />
-              <span className="text-xs font-bold text-menu-text-muted ml-1">{language.toUpperCase()}</span>
+              <Globe size={18} className="text-menu-text-muted" />
+              <span className="text-[10px] sm:text-xs font-bold text-menu-text-muted ml-0.5">{language.toUpperCase()}</span>
+            </button>
+
+            {/* Feedback Button */}
+            <button
+              onClick={() => setShowFeedback(true)}
+              className="flex items-center justify-center bg-menu-bg hover:bg-[#2A2A2A] border border-menu-border text-menu-primary p-2 rounded-full text-sm transition-all"
+              title={t('feedback')}
+            >
+              <MessageSquare size={16} />
             </button>
 
             {/* Call Waiter Button */}
             <button
               onClick={callWaiter}
-              className="flex items-center gap-2 bg-menu-bg hover:bg-[#2A2A2A] border border-menu-border text-menu-primary px-3 py-2 rounded-full text-sm font-bold transition-all"
+              className="flex items-center gap-1.5 bg-menu-bg hover:bg-[#2A2A2A] border border-menu-border text-menu-primary px-3 py-2 rounded-full text-xs sm:text-sm font-bold transition-all"
             >
               <Bell size={16} />
-              {t('callWaiter')}
+              <span className="hidden sm:inline">{t('callWaiter')}</span>
             </button>
           </div>
         </div>
@@ -527,14 +536,6 @@ export default function Menu() {
           className="fixed bottom-6 left-4 right-4 z-40 bg-menu-surface/80 backdrop-blur-md border border-menu-border p-2 rounded-2xl shadow-2xl"
         >
           <div className="flex gap-2">
-            <button
-              onClick={() => setShowFeedback(true)}
-              className="bg-menu-bg border border-menu-border text-menu-primary p-4 rounded-xl hover:bg-[#2A2A2A] transition-colors"
-              title={t('feedback')}
-            >
-              <MessageSquare size={20} />
-            </button>
-            
             {cartTotalInfo.count > 0 ? (
                 <button 
                 onClick={() => {
@@ -583,7 +584,7 @@ export default function Menu() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-menu-surface border border-menu-border z-50 rounded-2xl shadow-2xl p-6 w-[90%] max-w-md text-menu-text"
+              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-menu-surface/90 backdrop-blur-md border border-menu-border z-50 rounded-2xl shadow-2xl p-6 w-[95%] max-w-md text-menu-text"
             >
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-bold text-menu-primary">{t('feedback')}</h3>
@@ -625,7 +626,7 @@ export default function Menu() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed bottom-0 left-0 right-0 bg-menu-surface border-t border-menu-border z-50 rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col"
+              className="fixed bottom-0 left-0 right-0 bg-menu-surface/95 backdrop-blur-xl border-t border-menu-border z-50 rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col"
             >
               {/* Tabs Header */}
               <div className="p-4 border-b border-menu-border">
@@ -936,7 +937,7 @@ export default function Menu() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-md bg-menu-surface border border-menu-border z-50 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-md bg-menu-surface/90 backdrop-blur-md border border-menu-border z-50 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
             >
                <div className="p-5 border-b border-menu-border flex justify-between items-center bg-[#2A2A2A]">
                  <h2 className="text-xl font-bold text-menu-text flex items-center gap-2">

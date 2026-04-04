@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LayoutDashboard, ShoppingBag, UtensilsCrossed, Grid, LogOut, Users, MessageSquare, Globe, Settings as SettingsIcon } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, UtensilsCrossed, Grid, LogOut, Users, MessageSquare, Globe, Settings as SettingsIcon, Menu as MenuIcon, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -17,6 +17,7 @@ export default function AdminLayout() {
   
   const [activeRestaurant, setActiveRestaurant] = useState(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // If Admin, ensure checking authorized access
@@ -59,9 +60,22 @@ export default function AdminLayout() {
   const isSuperAdmin = role === 'superadmin';
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex flex-col md:flex-row h-screen bg-gray-100 overflow-hidden">
+      {/* Mobile Topbar */}
+      <div className="md:hidden bg-admin-bg text-admin-text h-16 flex items-center justify-between px-4 z-50 flex-shrink-0">
+        <h1 className="text-xl font-bold text-white">{t('management')}</h1>
+        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 hover:bg-admin-surface rounded text-white transition-colors">
+          {isMobileMenuOpen ? <X size={24} /> : <MenuIcon size={24} />}
+        </button>
+      </div>
+
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r shadow-sm flex flex-col">
+      <aside className={`
+        ${isMobileMenuOpen ? 'flex' : 'hidden'} 
+        md:flex w-full md:w-64 bg-white border-r shadow-sm flex-col 
+        absolute md:relative z-40 
+        h-[calc(100vh-4rem)] md:h-screen top-16 md:top-0 transition-transform bg-white overflow-y-auto
+      `}>
         <div className="p-6 border-b">
           <div className="flex justify-between items-center mb-2">
             <h1 className="text-xl font-bold text-gray-800">{t('management')}</h1>
@@ -87,6 +101,7 @@ export default function AdminLayout() {
               <Link
                 key={item.path}
                 to={item.path}
+                onClick={() => setIsMobileMenuOpen(false)}
                 className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                   isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'
                 }`}
@@ -130,7 +145,7 @@ export default function AdminLayout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-8 relative">
+      <main className="flex-1 overflow-y-auto p-4 md:p-8 relative w-full">
         {/* Pass activeRestaurant and restaurantId down to children */}
         <Outlet context={{ restaurantId, restaurantData: activeRestaurant }} />
         

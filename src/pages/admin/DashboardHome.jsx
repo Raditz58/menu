@@ -249,7 +249,38 @@ export default function DashboardHome() {
                 {todaysOrders.length} {t('orders')}
               </span>
             </div>
-            <div className="overflow-x-auto">
+            <div className="md:hidden flex flex-col gap-3 p-4">
+              {todaysOrders.length === 0 && (
+                <div className="text-center py-8 text-gray-400">{t('noData')}</div>
+              )}
+              {todaysOrders.map(order => {
+                const liveTotal = calcLiveTotal(order);
+                const cancelCount = (order.items || []).filter(i => i.status === 'cancelled').length;
+                const time = order.createdAt?.seconds ? new Date(order.createdAt.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '–';
+                return (
+                  <div key={order.id} onClick={() => setSelectedOrder(order)} className="bg-white border text-left p-4 rounded-xl shadow-sm space-y-3 cursor-pointer hover:bg-gray-50 flex flex-col">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="font-mono text-gray-500 text-xs">{time}</span>
+                        <h4 className="font-bold text-gray-800 text-lg mt-0.5">{order.tableCode}</h4>
+                      </div>
+                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${statusColor(order.status)}`}>
+                        {t(order.status) || order.status}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center bg-gray-50 p-2 rounded-lg">
+                      <span className="text-xs text-gray-500 font-medium">{t('total')}</span>
+                      <span className="font-bold text-gray-900">
+                        ₺ {liveTotal.toFixed(2)}
+                        {cancelCount > 0 && <span className="ml-1 text-[10px] text-red-500 font-bold">({cancelCount} iptal)</span>}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead className="bg-gray-50 border-b">
                   <tr className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
