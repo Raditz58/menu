@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LayoutDashboard, ShoppingBag, UtensilsCrossed, Grid, LogOut, Users, MessageSquare, Globe } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, UtensilsCrossed, Grid, LogOut, Users, MessageSquare, Globe, Settings as SettingsIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -52,6 +52,7 @@ export default function AdminLayout() {
     { label: t('tables'), path: `${basePath}/tables`, icon: <ShoppingBag size={20} /> },
     { label: t('staff'), path: `${basePath}/staff`, icon: <Users size={20} /> },
     { label: t('adminFeedback'), path: `${basePath}/feedback`, icon: <MessageSquare size={20} /> },
+    { label: t('settings') || 'Ayarlar', path: `${basePath}/settings`, icon: <SettingsIcon size={20} /> },
   ];
 
   // If superadmin, show a "Back to Dashboard" link
@@ -63,7 +64,7 @@ export default function AdminLayout() {
       <aside className="w-64 bg-white border-r shadow-sm flex flex-col">
         <div className="p-6 border-b">
           <div className="flex justify-between items-center mb-2">
-            <h1 className="text-xl font-bold text-gray-800">Admin</h1>
+            <h1 className="text-xl font-bold text-gray-800">{t('management')}</h1>
             {/* Language Toggle */}
             <button
                 onClick={toggleLanguage}
@@ -74,7 +75,7 @@ export default function AdminLayout() {
                 {language.toUpperCase()}
             </button>
           </div>
-          {isSuperAdmin && <Link to="/superadmin" className="text-xs text-blue-500 hover:underline">← Back to SuperAdmin</Link>}
+          {isSuperAdmin && <Link to="/superadmin" className="text-xs text-blue-500 hover:underline">← {t('back')} SuperAdmin</Link>}
           {activeRestaurant && <p className="text-sm font-semibold text-gray-600 mt-2">{activeRestaurant.name}</p>}
         </div>
         <nav className="flex-1 p-4 space-y-1">

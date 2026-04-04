@@ -142,10 +142,9 @@ export default function CashierView({ restaurantId }) {
 
   // Calculate Bill
   const getBillDetails = () => {
-      if (!selectedTable) return { items: [], total: 0 };
+      if (!selectedTable) return { groupedItems: [], total: 0 };
       const orders = getTableOrders(selectedTable.tableCode);
       
-      // Flatten items from ALL active orders
       let allItems = [];
       let total = 0;
 
@@ -153,23 +152,54 @@ export default function CashierView({ restaurantId }) {
           if (order.items) {
               order.items.forEach((item, idx) => {
                   allItems.push({ ...item, orderId: order.id, itemIndex: idx });
-                  // Only add to total if NOT cancelled
                   if (item.status !== 'cancelled') {
                       total += (Number(item.price) * (Number(item.quantity) || 0));
                   }
               });
           } else if (order.totalPrice) {
-               // Fallback for orders without items array (legacy)
                total += order.totalPrice;
           }
       });
       
-      return { items: allItems, total };
+      const groupedMap = new Map();
+      allItems.forEach(item => {
+         const key = item.productId || item.name;
+         const groupKey = `${key}_${item.status}`;
+         
+         if (!groupedMap.has(groupKey)) {
+             groupedMap.set(groupKey, {
+                 name: item.name,
+                 price: item.price,
+                 status: item.status,
+                 quantity: 0,
+                 orderId: item.orderId,
+                 itemIndex: item.itemIndex,
+                 sources: []
+             });
+         }
+         const group = groupedMap.get(groupKey);
+         group.quantity += (item.quantity || 0);
+         group.sources.push({ orderId: item.orderId, itemIndex: item.itemIndex, quantity: item.quantity || 0 });
+      });
+      
+      return { groupedItems: Array.from(groupedMap.values()), total };
+  };
+
+  const updateGroupedItemQty = async (group, delta) => {
+      if (delta > 0) {
+          const targetSource = group.sources[0];
+          await updateItemQty(targetSource.orderId, targetSource.itemIndex, 1);
+      } else if (delta < 0) {
+          const targetSource = group.sources.slice().reverse().find(s => s.quantity > 0);
+          if (targetSource) {
+              await updateItemQty(targetSource.orderId, targetSource.itemIndex, -1);
+          }
+      }
   };
 
   if (loading) return <div className="p-8 text-center text-gray-500">Loading POS...</div>;
 
-  const { items, total } = getBillDetails();
+  const { groupedItems, total } = getBillDetails();
 
   return (
     <div className="min-h-screen bg-gray-100 p-6 font-sans">
@@ -195,7 +225,7 @@ export default function CashierView({ restaurantId }) {
                     >
                         <span className="text-3xl font-bold">{table.tableCode}</span>
                         <div className="mt-2 text-xs uppercase font-bold tracking-wider px-2 py-1 rounded bg-black/20">
-                            {occupied ? 'Occupied' : 'Empty'}
+                            {occupied ? 'Dolu' : 'Boş'}
                         </div>
                         {occupied && (
                             <div className="mt-2 text-sm font-semibold">
@@ -219,8 +249,8 @@ export default function CashierView({ restaurantId }) {
                 <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
                     <div className="bg-gray-50 px-6 py-4 border-b flex justify-between items-center">
                         <div>
-                            <h2 className="text-2xl font-bold text-gray-800">Table {selectedTable.tableCode}</h2>
-                            <p className="text-sm text-gray-500">Bill Details</p>
+                            <h2 className="text-2xl font-bold text-gray-800">Masa {selectedTable.tableCode}</h2>
+                            <p className="text-sm text-gray-500">Adisyon Detayı</p>
                         </div>
                         <button onClick={() => setSelectedTable(null)} className="p-2 hover:bg-gray-200 rounded-full text-gray-500 transition-colors">
                             <X size={24} />
@@ -237,18 +267,18 @@ export default function CashierView({ restaurantId }) {
                                     </div>
                                     <div className="ml-3">
                                         <p className="text-sm text-yellow-700">
-                                            There are {getTableOrders(selectedTable.tableCode).filter(o => o.status !== 'delivered').length} orders not yet delivered. They will be marked as paid.
+                                            Henüz teslim edilmemiş {getTableOrders(selectedTable.tableCode).filter(o => o.status !== 'delivered').length} sipariş var. Onlar da ödendi olarak işaretlenecek.
                                         </p>
                                     </div>
                                 </div>
                             </div>
                         )}
 
-                        {items.length > 0 ? (
+                        {groupedItems.length > 0 ? (
                             <div className="space-y-4">
                                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Tüm Ürünler</h3>
                                 <ul className="space-y-3">
-                                    {items.map((item, i) => {
+                                    {groupedItems.map((item, i) => {
                                       const itemKey = `${item.orderId}_${item.itemIndex}`;
                                       const isUpdated = updatedItemKey === itemKey;
                                       const isCancelled = item.status === 'cancelled';
@@ -274,7 +304,7 @@ export default function CashierView({ restaurantId }) {
                                                 {!isCancelled && (
                                                   <div className="flex items-center gap-0.5 bg-gray-100 rounded-lg px-1">
                                                     <button
-                                                      onClick={() => updateItemQty(item.orderId, item.itemIndex, -1)}
+                                                      onClick={() => updateGroupedItemQty(item, -1)}
                                                       className="w-7 h-7 flex items-center justify-center text-red-500 hover:bg-red-100 rounded font-bold text-lg leading-none transition-colors"
                                                       title="Azalt"
                                                     >
@@ -282,7 +312,7 @@ export default function CashierView({ restaurantId }) {
                                                     </button>
                                                     <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
                                                     <button
-                                                      onClick={() => updateItemQty(item.orderId, item.itemIndex, +1)}
+                                                      onClick={() => updateGroupedItemQty(item, +1)}
                                                       className="w-7 h-7 flex items-center justify-center text-green-600 hover:bg-green-100 rounded font-bold text-lg leading-none transition-colors"
                                                       title="Artır"
                                                     >
@@ -298,22 +328,22 @@ export default function CashierView({ restaurantId }) {
                             </div>
                         ) : (
                             <div className="text-center py-10 text-gray-400">
-                                <p>No items found.</p>
+                                <p>Hiçbir ürün bulunamadı.</p>
                             </div>
                         )}
                     </div>
 
                     <div className="bg-gray-50 p-6 border-t">
                         <div className="flex justify-between items-center mb-6">
-                            <span className="text-lg font-medium text-gray-600">Total Amount</span>
-                            <span className="text-4xl font-bold text-gray-900">${total.toFixed(2)}</span>
+                            <span className="text-lg font-medium text-gray-600">Toplam Tutar</span>
+                            <span className="text-4xl font-bold text-gray-900">₺{total.toFixed(2)}</span>
                         </div>
 
                         <button 
                             onClick={closeAccount}
                             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all active:scale-98"
                         >
-                            <CheckCircle size={24} /> Close Account & Pay
+                            <CheckCircle size={24} /> Hesabı Kapat ve Öde
                         </button>
                     </div>
                 </div>

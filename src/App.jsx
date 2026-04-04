@@ -18,6 +18,7 @@ import DashboardHome from './pages/admin/DashboardHome';
 
 import AdminStaff from './pages/admin/Staff';
 import AdminFeedback from './pages/admin/AdminFeedback';
+import AdminSettings from './pages/admin/Settings';
 import NotFound from './pages/NotFound';
 
 const RootRedirect = () => {
@@ -64,6 +65,7 @@ function App() {
               <Route path="tables" element={<AdminTables />} />
               <Route path="staff"      element={<AdminStaff />} />
               <Route path="feedback"   element={<AdminFeedback />} />
+              <Route path="settings"   element={<AdminSettings />} />
             </Route>
 
             <Route 

@@ -167,9 +167,9 @@ export default function Staff() {
                         onChange={e => setRole(e.target.value)} 
                         className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     >
-                        <option value="service">Service (Waiter)</option>
-                        <option value="kitchen">Kitchen</option>
-                        <option value="cashier">Cashier</option>
+                        <option value="service">Servis (Garson)</option>
+                        <option value="kitchen">Mutfak</option>
+                        <option value="cashier">Kasa</option>
                         <option value="admin">Admin</option>
                     </select>
                 </div>
@@ -185,7 +185,7 @@ export default function Staff() {
           <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-8">
             <p className="text-sm text-yellow-800 flex items-center gap-2">
               <Shield size={16} />
-              Only SuperAdmins can manage staff members. You can view the list below.
+              Sadece Süper Adminler personel yönetebilir. Aşağıdan listeyi görebilirsiniz.
             </p>
           </div>
         )}

@@ -111,9 +111,9 @@ export default function ServiceView({ restaurantId }) {
     <div className="min-h-screen bg-gray-50 p-6 font-sans">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold flex items-center gap-3 mb-8 text-gray-800">
-          <Bell className="text-green-600 fill-green-100" /> Service Station
+          <Bell className="text-green-600 fill-green-100" /> Servis İstasyonu
           <span className="bg-green-100 text-green-700 text-sm py-1 px-3 rounded-full font-medium ml-2">
-            {orders.length} Ready
+            {orders.length} Hazır
           </span>
         </h1>
 
@@ -175,7 +175,7 @@ export default function ServiceView({ restaurantId }) {
         )}
 
         {/* Ready Orders Section */}
-        <h2 className="text-xl font-bold mb-4">Ready for Pickup ({orders.length})</h2>
+        <h2 className="text-xl font-bold mb-4">Teslime Hazır ({orders.length})</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <AnimatePresence mode="popLayout">
             {orders.length === 0 && notifications.length === 0 && (
@@ -186,8 +186,8 @@ export default function ServiceView({ restaurantId }) {
                 className="col-span-full py-24 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-200 rounded-2xl bg-white/50"
               >
                 <Coffee size={48} className="mb-4 text-gray-300" />
-                <p className="text-xl font-medium">All caught up!</p>
-                <p className="text-sm">No pending orders or waiter calls.</p>
+                <p className="text-xl font-medium">Tüm siparişler tamam!</p>
+                <p className="text-sm">Bekleyen sipariş veya garson çağrısı yok.</p>
               </motion.div>
             )}
 
@@ -202,9 +202,9 @@ export default function ServiceView({ restaurantId }) {
               >
                 <div className="mb-6">
                   <div className="flex justify-between items-start mb-4">
-                    <h2 className="text-2xl font-bold text-gray-800">Table {order.tableCode}</h2>
+                    <h2 className="text-2xl font-bold text-gray-800">Masa {order.tableCode}</h2>
                     <span className="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide animate-pulse">
-                      Pickup
+                      Teslim Al
                     </span>
                   </div>
                   <div className="border-t border-gray-100 pt-4">
@@ -226,7 +226,7 @@ export default function ServiceView({ restaurantId }) {
                   </div>
                   <div className="text-xs text-gray-400 mt-4 pt-4 border-t border-gray-100 flex items-center gap-1">
                     <CheckCircle size={12} className="text-green-500" />
-                    Ready since: {order.readyAt?.seconds ? new Date(order.readyAt.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : (order.createdAt?.seconds ? new Date(order.createdAt.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Just now')}
+                    Hazır olduğu zaman: {order.readyAt?.seconds ? new Date(order.readyAt.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : (order.createdAt?.seconds ? new Date(order.createdAt.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Şimdi')}
                   </div>
                 </div>
 
@@ -234,7 +234,7 @@ export default function ServiceView({ restaurantId }) {
                   onClick={() => markDelivered(order.id)}
                   className="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white px-6 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all transform group-hover:translate-y-1 shadow-lg shadow-green-200"
                 >
-                  <Truck size={20} /> Mark Delivered
+                  <Truck size={20} /> Teslim Edildi İşaretle
                 </button>
               </motion.div>
             ))}

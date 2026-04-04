@@ -9,7 +9,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShoppingBag, Plus, Minus, X, UtensilsCrossed, ChevronRight, 
-  Clock, CheckCircle, ChefHat, BellRing, Bell, MessageSquare, Globe 
+  Clock, CheckCircle, ChefHat, BellRing, Bell, MessageSquare, Globe, Loader2
 } from 'lucide-react';
 
 export default function Menu() {
@@ -30,6 +30,28 @@ export default function Menu() {
   const [feedbackText, setFeedbackText] = useState('');
   const [waiterCallSuccess, setWaiterCallSuccess] = useState(false);
   const [updatedItemKey, setUpdatedItemKey] = useState(null); // e.g. `${orderId}_${idx}`
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
+  const [wasOccupied, setWasOccupied] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showOrderConfirmation, setShowOrderConfirmation] = useState(false);
+
+  const [localGuestId] = useState(() => {
+    let gid = localStorage.getItem('guestId');
+    if (!gid) {
+      gid = crypto.randomUUID();
+      localStorage.setItem('guestId', gid);
+    }
+    return gid;
+  });
+
+  const optimizeImage = (url, width) => {
+    if (!url) return '';
+    if (url.includes('cloudinary.com')) {
+      return url.replace('/upload/', `/upload/f_auto,q_auto,w_${width}/`);
+    }
+    return url;
+  };
 
   // 1. Fetch Restaurant by Slug
   useEffect(() => {
@@ -126,6 +148,33 @@ export default function Menu() {
     return () => unsubscribe();
   }, [restaurant, tableCode]);
 
+  // 4b. Listen for Table Payment to clear session
+  useEffect(() => {
+    if (!restaurant?.id || !tableCode) return;
+
+    const tableQuery = query(
+      collection(db, 'tables'),
+      where('restaurantId', '==', restaurant.id),
+      where('tableCode', '==', tableCode)
+    );
+
+    const unsubscribe = onSnapshot(tableQuery, (snap) => {
+      if (!snap.empty) {
+        const tableData = snap.docs[0].data();
+        if (tableData.status === 'occupied') {
+          setWasOccupied(true);
+        } else if (tableData.status === 'empty' && wasOccupied) {
+          // Table was occupied during this session, and now is empty -> Paid
+          setIsPaid(true);
+          const sessionId = `${restaurant.id}_${tableCode}`;
+          deleteDoc(doc(db, 'active_sessions', sessionId)).catch(console.error);
+        }
+      }
+    });
+    
+    return () => unsubscribe();
+  }, [restaurant, tableCode, wasOccupied]);
+
   // Cart Operations
   const addToCart = async (product) => {
     if (!restaurant?.id) return;
@@ -142,7 +191,8 @@ export default function Menu() {
         productId: product.id,
         name: product.name,
         price: product.price,
-        quantity: 1
+        quantity: 1,
+        guestId: localGuestId
       });
     }
 
@@ -164,8 +214,9 @@ export default function Menu() {
   };
 
   const placeOrder = async () => {
-    if (cart.length === 0) return;
+    if (cart.length === 0 || isSubmitting) return;
     setOrderStatus('sending');
+    setIsSubmitting(true);
 
     try {
       const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -208,19 +259,37 @@ export default function Menu() {
     } catch (err) {
       console.error("Order failed:", err);
       setOrderStatus('error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   // Call Waiter
   const callWaiter = async () => {
     try {
-      await addDoc(collection(db, 'notifications'), {
-        restaurantId: restaurant.id,
-        tableCode,
-        type: 'waiter_call',
-        status: 'pending',
-        createdAt: serverTimestamp()
-      });
+      const q = query(
+        collection(db, 'notifications'), 
+        where('tableCode', '==', tableCode), 
+        where('restaurantId', '==', restaurant.id),
+        where('type', '==', 'waiter_call'), 
+        where('status', '==', 'pending')
+      );
+      const snap = await getDocs(q);
+      
+      if (!snap.empty) {
+        const docId = snap.docs[0].id;
+        await updateDoc(doc(db, 'notifications', docId), { updatedAt: serverTimestamp() });
+      } else {
+        await addDoc(collection(db, 'notifications'), {
+          restaurantId: restaurant.id,
+          tableCode,
+          type: 'waiter_call',
+          status: 'pending',
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+      }
+
       setWaiterCallSuccess(true);
       setTimeout(() => setWaiterCallSuccess(false), 3000);
     } catch (err) {
@@ -297,6 +366,22 @@ export default function Menu() {
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-menu-bg"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-menu-primary"></div></div>;
   if (!restaurant) return <div className="min-h-screen flex items-center justify-center text-menu-text-muted">{t('noData')}</div>;
 
+  if (isPaid) {
+    return (
+      <div className="min-h-screen bg-menu-bg flex flex-col items-center justify-center p-6 text-center text-menu-text">
+        <CheckCircle size={64} className="text-menu-primary mb-6 animate-bounce" />
+        <h2 className="text-2xl font-bold mb-4">Teşekkürler, ödemeniz alındı</h2>
+        <p className="text-menu-text-muted mb-8 text-sm">Umarız yemeklerinizden memnun kalmışsınızdır. Yine bekleriz!</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="bg-menu-primary text-menu-bg px-8 py-3 rounded-full font-bold hover:bg-menu-accent transition-colors shadow-lg"
+        >
+          Yeni Sipariş Ver
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-menu-bg pb-24 font-sans text-menu-text">
       {/* Header */}
@@ -304,10 +389,10 @@ export default function Menu() {
         <div className="px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-3 overflow-hidden">
             {restaurant.logoUrl ? (
-              <img src={restaurant.logoUrl} alt="Logo" className="w-10 h-10 rounded-full object-cover shadow-sm" />
+              <img src={optimizeImage(restaurant.logoUrl, 100)} alt="Logo" loading="lazy" className="w-10 h-10 rounded-full object-cover shadow-sm bg-white" />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-menu-bg flex items-center justify-center text-menu-primary font-bold shadow-sm border border-menu-border">
-                {restaurant.name.substring(0, 2).toUpperCase()}
+              <div className="w-10 h-10 rounded-full bg-menu-primary/10 flex items-center justify-center text-menu-primary shadow-sm border border-menu-primary/20">
+                <span className="font-serif font-black italic text-lg">{restaurant.name.substring(0, 1).toUpperCase()}</span>
               </div>
             )}
             <div>
@@ -390,12 +475,13 @@ export default function Menu() {
                 key={product.id}
                 initial={{ scale: 0.95 }}
                 whileInView={{ scale: 1 }}
-                className="bg-menu-surface p-3 flex gap-4 border-b border-menu-border"
+                className="bg-menu-surface p-3 flex gap-4 border-b border-menu-border hover:bg-[#2A2A2A] transition-colors cursor-pointer"
+                onClick={() => setSelectedProduct(product)}
               >
-                <div className="w-28 h-28 bg-[#2A2A2A] flex-shrink-0 relative overflow-hidden">
+                <div className="w-28 h-28 bg-[#2A2A2A] flex-shrink-0 relative overflow-hidden rounded-lg">
                   {product.imageUrl ? (
                     <>
-                      <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                      <img src={optimizeImage(product.imageUrl, 200)} alt={product.name} loading="lazy" className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                     </>
                   ) : (
@@ -412,10 +498,10 @@ export default function Menu() {
                   <div className="flex justify-between items-center mt-2">
                     <span className="text-menu-primary font-bold text-xl">₺{product.price}</span>
                     <button 
-                      onClick={() => addToCart(product)}
+                      onClick={(e) => { e.stopPropagation(); addToCart(product); }}
                       className="px-3 py-1 rounded bg-transparent border border-menu-primary text-menu-primary hover:bg-menu-primary hover:text-white active:scale-95 transition-all font-medium text-sm flex items-center gap-1"
                     >
-                      <Plus size={14} /> Add
+                      <Plus size={14} /> {t('add')}
                     </button>
                   </div>
                 </div>
@@ -544,7 +630,7 @@ export default function Menu() {
               {/* Tabs Header */}
               <div className="p-4 border-b border-menu-border">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold text-menu-text">{tableCode}</h2>
+                  <h2 className="text-xl font-bold text-menu-text">Masa {tableCode}</h2>
                   <button onClick={() => setIsDrawerOpen(false)} className="p-2 bg-[#2A2A2A] border border-menu-border text-menu-text rounded-full hover:bg-menu-bg">
                     <X size={20} />
                   </button>
@@ -572,27 +658,55 @@ export default function Menu() {
               {/* Tab Content */}
               <div className="flex-1 overflow-y-auto p-4">
                 {drawerTab === 'cart' ? (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {cart.length === 0 ? (
                       <p className="text-center text-gray-500 py-8">{t('emptyCart')}</p>
                     ) : (
-                      cart.map((item, idx) => (
-                        <div key={idx} className="flex justify-between items-center bg-menu-bg border border-menu-border p-3 rounded-lg">
+                      <>
+                        {cart.filter(i => i.guestId === localGuestId).length > 0 && (
                           <div>
-                            <p className="font-semibold text-menu-text">{item.name}</p>
-                            <p className="text-sm text-menu-text-muted">₺{item.price}</p>
+                            <h3 className="text-xs font-bold text-menu-text-muted uppercase tracking-wider mb-3">Senin Eklediklerin</h3>
+                            <div className="space-y-3">
+                              {cart.filter(i => i.guestId === localGuestId).map((item, idx) => (
+                                <div key={idx} className="flex justify-between items-center bg-menu-bg border border-menu-border p-3 rounded-lg border-l-2 border-l-menu-primary">
+                                  <div>
+                                    <p className="font-semibold text-menu-text">{item.name}</p>
+                                    <p className="text-sm text-menu-text-muted">₺{item.price}</p>
+                                  </div>
+                                  <div className="flex items-center gap-3 bg-menu-surface border border-menu-border rounded-lg p-1">
+                                    <button onClick={() => updateQuantity(item.productId, -1)} className="p-1 hover:bg-[#2A2A2A] text-menu-text rounded">
+                                      <Minus size={16} />
+                                    </button>
+                                    <span className="font-medium w-4 text-center text-menu-text">{item.quantity}</span>
+                                    <button onClick={() => updateQuantity(item.productId, 1)} className="p-1 hover:bg-[#2A2A2A] text-menu-text rounded">
+                                      <Plus size={16} />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-3 bg-menu-surface border border-menu-border rounded-lg p-1">
-                            <button onClick={() => updateQuantity(item.productId, -1)} className="p-1 hover:bg-[#2A2A2A] text-menu-text rounded">
-                              <Minus size={16} />
-                            </button>
-                            <span className="font-medium w-4 text-center text-menu-text">{item.quantity}</span>
-                            <button onClick={() => updateQuantity(item.productId, 1)} className="p-1 hover:bg-[#2A2A2A] text-menu-text rounded">
-                              <Plus size={16} />
-                            </button>
+                        )}
+                        
+                        {cart.filter(i => i.guestId !== localGuestId).length > 0 && (
+                          <div>
+                            <h3 className="text-xs font-bold text-menu-text-muted uppercase tracking-wider mb-3">Masadaki Diğerleri</h3>
+                            <div className="space-y-3">
+                              {cart.filter(i => i.guestId !== localGuestId).map((item, idx) => (
+                                <div key={idx} className="flex justify-between items-center bg-menu-bg border border-menu-border p-3 rounded-lg opacity-70">
+                                  <div>
+                                    <p className="font-semibold text-menu-text">{item.name}</p>
+                                    <p className="text-sm text-menu-text-muted">₺{item.price}</p>
+                                  </div>
+                                  <div className="text-sm text-menu-text font-bold px-4 py-2 bg-menu-surface rounded-lg">
+                                    {item.quantity} Adet
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      ))
+                        )}
+                      </>
                     )}
                   </div>
                 ) : (
@@ -730,11 +844,11 @@ export default function Menu() {
                     </div>
                   ) : (
                     <button 
-                      onClick={placeOrder}
-                      disabled={cart.length === 0 || orderStatus === 'sending'}
+                      onClick={() => setShowOrderConfirmation(true)}
+                      disabled={cart.length === 0 || orderStatus === 'sending' || isSubmitting}
                       className="w-full bg-menu-primary text-menu-bg py-4 rounded-xl font-bold text-lg shadow-lg disabled:opacity-50 flex justify-center items-center gap-2 hover:bg-menu-accent transition-colors"
                     >
-                      {orderStatus === 'sending' ? (
+                      {orderStatus === 'sending' || isSubmitting ? (
                         <>{t('loading')}...</>
                       ) : (
                         <>{t('placeOrder')} <ChevronRight /></>
@@ -747,6 +861,137 @@ export default function Menu() {
           </>
         )}
       </AnimatePresence>
+
+      {/* Product Detail Modal */}
+      <AnimatePresence>
+        {selectedProduct && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedProduct(null)}
+              className="fixed inset-0 bg-black z-50 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed bottom-0 left-0 right-0 bg-menu-surface border-t border-menu-border z-50 rounded-t-3xl shadow-2xl max-h-[90vh] flex flex-col"
+            >
+               <div className="relative w-full h-64 bg-[#2A2A2A] rounded-t-3xl overflow-hidden shadow-inner">
+                  {selectedProduct.imageUrl ? (
+                     <img src={optimizeImage(selectedProduct.imageUrl, 800)} alt={selectedProduct.name} loading="lazy" className="w-full h-full object-cover" />
+                  ) : (
+                     <div className="w-full h-full flex items-center justify-center text-menu-text-muted">
+                        <UtensilsCrossed size={48} />
+                     </div>
+                  )}
+                  <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 p-2 bg-black/50 backdrop-blur-md rounded-full text-white hover:bg-black/70">
+                    <X size={24} />
+                  </button>
+                  <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-menu-surface to-transparent"></div>
+               </div>
+
+               <div className="p-6 flex-1 overflow-y-auto">
+                 <div className="flex justify-between items-start mb-4">
+                   <h2 className="text-3xl font-black text-menu-text leading-tight">{selectedProduct.name}</h2>
+                   <span className="text-2xl font-bold text-menu-primary mt-1">₺{selectedProduct.price}</span>
+                 </div>
+                 
+                 <p className="text-menu-text-muted text-base leading-relaxed tracking-wide font-light mb-8">
+                   {selectedProduct.description || "Açıklama bulunmuyor."}
+                 </p>
+               </div>
+               
+               <div className="p-6 border-t border-menu-border bg-menu-surface">
+                 <button 
+                    onClick={() => {
+                      addToCart(selectedProduct);
+                      setSelectedProduct(null);
+                    }}
+                    className="w-full bg-menu-primary text-menu-bg py-4 rounded-xl font-bold text-xl shadow-lg hover:bg-menu-accent transition-colors flex justify-center items-center gap-2"
+                 >
+                    <Plus size={24} /> {t('add')}
+                 </button>
+               </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Order Confirmation Modal */}
+      <AnimatePresence>
+        {showOrderConfirmation && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowOrderConfirmation(false)}
+              className="fixed inset-0 bg-black z-50 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-md bg-menu-surface border border-menu-border z-50 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+            >
+               <div className="p-5 border-b border-menu-border flex justify-between items-center bg-[#2A2A2A]">
+                 <h2 className="text-xl font-bold text-menu-text flex items-center gap-2">
+                   <CheckCircle className="text-menu-primary" size={24} /> Siparişi Onayla
+                 </h2>
+                 <button onClick={() => setShowOrderConfirmation(false)} className="text-menu-text-muted hover:text-menu-text">
+                    <X size={24} />
+                 </button>
+               </div>
+               
+               <div className="p-5 overflow-y-auto flex-1 bg-menu-bg space-y-3">
+                 <h3 className="text-sm font-bold text-menu-text-muted uppercase tracking-wider mb-2">Sepet Özeti</h3>
+                 {cart.map((item, idx) => (
+                    <div key={idx} className="flex justify-between items-center border-b border-menu-border pb-2 last:border-0 last:pb-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-menu-primary bg-menu-primary/10 px-2 py-0.5 rounded text-sm">{item.quantity}x</span>
+                        <span className="font-medium text-menu-text">{item.name}</span>
+                      </div>
+                      <span className="text-menu-text-muted text-sm font-semibold">₺{(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                 ))}
+               </div>
+
+               <div className="p-5 border-t border-menu-border bg-menu-surface">
+                 <div className="flex justify-between items-center mb-5 text-xl font-black text-menu-text">
+                   <span>Genel Toplam</span>
+                   <span className="text-menu-primary">₺{cartTotalInfo.total.toFixed(2)}</span>
+                 </div>
+                 
+                 <button 
+                    onClick={() => {
+                      setShowOrderConfirmation(false);
+                      placeOrder();
+                    }}
+                    disabled={isSubmitting || orderStatus === 'sending'}
+                    className="w-full bg-menu-primary text-menu-bg py-4 rounded-xl font-bold text-lg shadow-[0_0_20px_rgba(var(--menu-primary-rgb),0.3)] hover:shadow-[0_0_30px_rgba(var(--menu-primary-rgb),0.5)] transition-all flex items-center justify-center gap-2"
+                 >
+                    {isSubmitting || orderStatus === 'sending' ? (
+                       <><Loader2 className="animate-spin" size={20} /> Onaylanıyor...</>
+                    ) : (
+                       <><CheckCircle size={20} /> Siparişi Onayla ve Gönder</>
+                    )}
+                 </button>
+                 <button 
+                    onClick={() => setShowOrderConfirmation(false)}
+                    className="w-full mt-3 py-3 rounded-xl font-bold text-menu-text-muted hover:text-menu-text hover:bg-menu-bg transition-colors"
+                 >
+                    Geri Dön
+                 </button>
+               </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

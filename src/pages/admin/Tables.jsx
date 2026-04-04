@@ -86,15 +86,15 @@ export default function Tables() {
 
   return (
     <div>
-        <h2 className="text-2xl font-bold mb-6">Table Management</h2>
+        <h2 className="text-2xl font-bold mb-6">Masa Yönetimi</h2>
 
         <div className="bg-white p-6 rounded-lg shadow mb-8">
-            <h3 className="text-lg font-semibold mb-4">Manage Tables</h3>
+            <h3 className="text-lg font-semibold mb-4">Masaları Yönet</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Manual Add */}
                 <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">Add Single Table</h4>
+                    <h4 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">Tekli Masa Ekle</h4>
                     <form onSubmit={(e) => {
                         e.preventDefault();
                         const code = e.target.elements.tableCode.value;
@@ -112,23 +112,23 @@ export default function Tables() {
                         }
                     }} className="flex gap-2 items-end">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Table Code</label>
+                            <label className="block text-sm font-medium text-gray-700">Masa Kodu</label>
                             <input name="tableCode" type="text" placeholder="e.g. T-01, S-02" className="border p-2 rounded w-40" required />
                         </div>
                         <button type="submit" disabled={loading} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2">
                             <Plus size={18} />
-                            Add
+                            Ekle
                         </button>
                     </form>
                 </div>
 
                 {/* Bulk Generation */}
                 <div className="border-l pl-8">
-                     <h4 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">Bulk Table Generation</h4>
-                     <p className="text-xs text-gray-500 mb-4">Generate multiple tables with a custom prefix and number range</p>
+                     <h4 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">Toplu Masa Oluşturma</h4>
+                     <p className="text-xs text-gray-500 mb-4">Özel bir önek ve sayı aralığı ile birden fazla masa oluşturun</p>
                     <div className="flex gap-3 items-end flex-wrap">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Prefix</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Önek</label>
                             <input 
                               type="text" 
                               value={generateCount.prefix || 'ST'} 
@@ -138,7 +138,7 @@ export default function Tables() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Start No.</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Başlangıç No.</label>
                             <input 
                               type="number" 
                               min="1"
@@ -148,7 +148,7 @@ export default function Tables() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">End No.</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Bitiş No.</label>
                             <input 
                               type="number" 
                               min="1"
@@ -158,7 +158,7 @@ export default function Tables() {
                         </div>
                         <button onClick={handleBulkGenerate} disabled={loading} className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2">
                             <Plus size={18} />
-                            Generate {((generateCount.endNo || 10) - (generateCount.startNo || 1) + 1)} Tables
+                            {((generateCount.endNo || 10) - (generateCount.startNo || 1) + 1)} Masa Oluştur
                         </button>
                     </div>
                 </div>
@@ -209,7 +209,7 @@ export default function Tables() {
                         <X size={20} />
                     </button>
                     
-                    <h3 className="text-xl font-bold mb-1">Table {selectedQR.tableCode}</h3>
+                    <h3 className="text-xl font-bold mb-1">Masa {selectedQR.tableCode}</h3>
                     <p className="text-gray-500 text-sm mb-6">{restaurantData?.name}</p>
                     
                     <div ref={qrRef} className="bg-white p-4 rounded-xl shadow-inner border border-gray-100 mb-6">
@@ -238,7 +238,7 @@ export default function Tables() {
                         className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-colors"
                     >
                         <Download size={20} />
-                        Download QR Code
+                        QR Kodunu İndir
                     </button>
                 </div>
             </div>

@@ -65,11 +65,11 @@ export default function KitchenView({ restaurantId }) {
     <div className="min-h-screen bg-gray-900 text-white p-4 font-sans relative overflow-hidden">
         <div className="flex justify-between items-center mb-6 relative z-10">
             <h1 className="text-2xl font-bold flex items-center gap-2">
-                <ChefHat className="text-yellow-500" /> Kitchen Display
+                <ChefHat className="text-yellow-500" /> Mutfak Ekranı
             </h1>
             <div className="flex items-center gap-4 text-sm text-gray-400">
-                <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse"></span> Pending</span>
-                <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-blue-500"></span> Preparing</span>
+                <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse"></span> Beklemede</span>
+                <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-blue-500"></span> Hazırlanıyor</span>
             </div>
         </div>
 
@@ -83,8 +83,8 @@ export default function KitchenView({ restaurantId }) {
                         className="col-span-full py-20 flex flex-col items-center justify-center text-gray-600 space-y-4"
                     >
                         <Coffee size={64} className="text-gray-700" />
-                        <p className="text-xl font-medium">All caught up!</p>
-                        <p className="text-sm">No active orders in the kitchen.</p>
+                        <p className="text-xl font-medium">Tüm siparişler tamam!</p>
+                        <p className="text-sm">Mutfakta aktif sipariş yok.</p>
                     </motion.div>
                 )}
                 
@@ -104,16 +104,16 @@ export default function KitchenView({ restaurantId }) {
                         <div>
                             <div className="flex justify-between items-start border-b border-gray-700 pb-3 mb-4">
                                 <div>
-                                    <span className="text-3xl font-black text-white block tracking-tight">Table {order.tableCode}</span>
+                                    <span className="text-3xl font-black text-white block tracking-tight">Masa {order.tableCode}</span>
                                     <div className="text-xs text-gray-400 flex items-center gap-1 mt-1 font-medium">
                                         <Clock size={12} />
-                                        {order.createdAt?.seconds ? new Date(order.createdAt.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Just now'}
+                                        {order.createdAt?.seconds ? new Date(order.createdAt.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Şimdi'}
                                     </div>
                                 </div>
                                 <span className={`px-2 py-1 text-xs rounded uppercase font-bold tracking-wider ${
                                     order.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-blue-500/10 text-blue-400'
                                 }`}>
-                                    {order.status}
+                                    {order.status === 'pending' ? 'Beklemede' : 'Hazırlanıyor'}
                                 </span>
                             </div>
 
@@ -133,7 +133,7 @@ export default function KitchenView({ restaurantId }) {
                                 ))}
                                 {order.note && (
                                     <div className="text-sm text-red-200 italic bg-red-900/30 p-3 rounded-lg border border-red-500/20 mt-2">
-                                        Note: {order.note}
+                                        Not: {order.note}
                                     </div>
                                 )}
                             </div>
@@ -145,14 +145,14 @@ export default function KitchenView({ restaurantId }) {
                                     onClick={() => updateStatus(order.id, 'preparing')}
                                     className="w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white py-4 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-blue-500/20 active:scale-95"
                                 >
-                                    <ChefHat size={24} /> Start Cooking
+                                    <ChefHat size={24} /> Hazırlamaya Başla
                                 </button>
                             ) : (
                                 <button 
                                     onClick={() => updateStatus(order.id, 'ready')}
                                     className="w-full bg-green-600 hover:bg-green-500 active:bg-green-700 text-white py-4 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-green-500/20 active:scale-95"
                                 >
-                                    <CheckCircle size={24} /> Order Ready
+                                    <CheckCircle size={24} /> Sipariş Hazır
                                 </button>
                             )}
                         </div>
