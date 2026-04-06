@@ -200,46 +200,49 @@ export default function Tables() {
 
         {/* QR Code Modal */}
         {selectedQR && (
-            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
-                <div className="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full flex flex-col items-center relative animate-in zoom-in-95 duration-200">
-                    <button 
-                        onClick={() => setSelectedQR(null)}
-                        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full p-1"
-                    >
-                        <X size={20} />
-                    </button>
-                    
-                    <h3 className="text-xl font-bold mb-1">Masa {selectedQR.tableCode}</h3>
-                    <p className="text-gray-500 text-sm mb-6">{restaurantData?.name}</p>
-                    
-                    <div ref={qrRef} className="bg-white p-4 rounded-xl shadow-inner border border-gray-100 mb-6">
-                        <QRCodeCanvas 
-                            value={qrUrl(selectedQR.tableCode)}
-                            size={200}
-                            level={"H"}
-                            includeMargin={true}
-                            imageSettings={{
-                                src: "/logo-placeholder.png", // Or restaurant logo if available
-                                x: undefined,
-                                y: undefined,
-                                height: 24,
-                                width: 24,
-                                excavate: true,
-                            }}
-                        />
+            <div className="fixed inset-0 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+                <div onClick={() => setSelectedQR(null)} className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+                <div className="relative z-10 w-[calc(100%-2rem)] mx-4 sm:w-full sm:max-w-sm sm:mx-auto bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col items-center animate-in zoom-in-95 duration-200 max-h-[90vh]">
+                    <div className="w-full relative p-5 sm:p-8 flex flex-col items-center overflow-y-auto">
+                        <button 
+                            onClick={() => setSelectedQR(null)}
+                            className="absolute top-4 right-4 min-w-[40px] min-h-[40px] flex items-center justify-center text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
+                        
+                        <h3 className="text-xl font-bold mb-1">Masa {selectedQR.tableCode}</h3>
+                        <p className="text-gray-500 text-sm mb-6">{restaurantData?.name}</p>
+                        
+                        <div ref={qrRef} className="bg-white p-4 rounded-xl shadow-inner border border-gray-100 mb-6 flex-shrink-0">
+                            <QRCodeCanvas 
+                                value={qrUrl(selectedQR.tableCode)}
+                                size={200}
+                                level={"H"}
+                                includeMargin={true}
+                                imageSettings={{
+                                    src: "/logo-placeholder.png", // Or restaurant logo if available
+                                    x: undefined,
+                                    y: undefined,
+                                    height: 24,
+                                    width: 24,
+                                    excavate: true,
+                                }}
+                            />
+                        </div>
+
+                        <p className="text-xs text-center text-gray-400 mb-6 break-all">
+                            {qrUrl(selectedQR.tableCode)}
+                        </p>
+
+                        <button 
+                            onClick={downloadQR}
+                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-colors flex-shrink-0"
+                        >
+                            <Download size={20} />
+                            QR Kodunu İndir
+                        </button>
                     </div>
-
-                    <p className="text-xs text-center text-gray-400 mb-6 break-all">
-                        {qrUrl(selectedQR.tableCode)}
-                    </p>
-
-                    <button 
-                        onClick={downloadQR}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-colors"
-                    >
-                        <Download size={20} />
-                        QR Kodunu İndir
-                    </button>
                 </div>
             </div>
         )}

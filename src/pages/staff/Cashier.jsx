@@ -245,19 +245,20 @@ export default function CashierView({ restaurantId }) {
 
         {/* Selected Table Modal / Overlay */}
         {selectedTable && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-                <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
-                    <div className="bg-gray-50 px-6 py-4 border-b flex justify-between items-center">
+            <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
+                <div onClick={() => setSelectedTable(null)} className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+                <div className="relative z-10 w-[calc(100%-2rem)] mx-4 sm:w-full sm:max-w-lg sm:mx-auto bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="bg-gray-50 p-5 sm:px-6 sm:py-4 border-b flex justify-between items-center shrink-0">
                         <div>
                             <h2 className="text-2xl font-bold text-gray-800">Masa {selectedTable.tableCode}</h2>
                             <p className="text-sm text-gray-500">Adisyon Detayı</p>
                         </div>
-                        <button onClick={() => setSelectedTable(null)} className="p-2 hover:bg-gray-200 rounded-full text-gray-500 transition-colors">
+                        <button onClick={() => setSelectedTable(null)} className="min-w-[40px] min-h-[40px] flex items-center justify-center hover:bg-gray-200 rounded-full text-gray-500 transition-colors">
                             <X size={24} />
                         </button>
                     </div>
 
-                    <div className="p-6 overflow-y-auto flex-1">
+                    <div className="p-5 sm:p-6 overflow-y-auto flex-1">
                         {/* Summary of Non-Delivered Orders */}
                         {getTableOrders(selectedTable.tableCode).filter(o => o.status !== 'delivered').length > 0 && (
                              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
@@ -305,7 +306,7 @@ export default function CashierView({ restaurantId }) {
                                                   <div className="flex items-center gap-0.5 bg-gray-100 rounded-lg px-1">
                                                     <button
                                                       onClick={() => updateGroupedItemQty(item, -1)}
-                                                      className="w-7 h-7 flex items-center justify-center text-red-500 hover:bg-red-100 rounded font-bold text-lg leading-none transition-colors"
+                                                      className="w-8 h-8 sm:w-7 sm:h-7 flex items-center justify-center text-red-500 hover:bg-red-100 rounded font-bold text-lg leading-none transition-colors"
                                                       title="Azalt"
                                                     >
                                                       −
@@ -313,7 +314,7 @@ export default function CashierView({ restaurantId }) {
                                                     <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
                                                     <button
                                                       onClick={() => updateGroupedItemQty(item, +1)}
-                                                      className="w-7 h-7 flex items-center justify-center text-green-600 hover:bg-green-100 rounded font-bold text-lg leading-none transition-colors"
+                                                      className="w-8 h-8 sm:w-7 sm:h-7 flex items-center justify-center text-green-600 hover:bg-green-100 rounded font-bold text-lg leading-none transition-colors"
                                                       title="Artır"
                                                     >
                                                       +
@@ -333,7 +334,7 @@ export default function CashierView({ restaurantId }) {
                         )}
                     </div>
 
-                    <div className="bg-gray-50 p-6 border-t">
+                    <div className="bg-gray-50 p-5 sm:p-6 border-t shrink-0">
                         <div className="flex justify-between items-center mb-6">
                             <span className="text-lg font-medium text-gray-600">Toplam Tutar</span>
                             <span className="text-4xl font-bold text-gray-900">₺{total.toFixed(2)}</span>

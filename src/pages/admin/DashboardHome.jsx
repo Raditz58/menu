@@ -353,20 +353,20 @@ export default function DashboardHome() {
       {/* ── Order Detail Modal ───────────────────────────────────────── */}
       <AnimatePresence>
         {selectedOrder && (
-          <>
+          <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} exit={{ opacity: 0 }}
               onClick={() => setSelectedOrder(null)}
-              className="fixed inset-0 bg-black z-40"
+              className="absolute inset-0 bg-black backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.92, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, y: 20 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl z-50 w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden"
+              className="relative z-10 w-[calc(100%-2rem)] mx-4 sm:w-full sm:max-w-md sm:mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
             >
               {/* Modal header */}
-              <div className="flex justify-between items-center px-6 py-4 border-b bg-gray-50">
+              <div className="flex justify-between items-center p-5 sm:p-6 border-b bg-gray-50 flex-shrink-0">
                 <div>
                   <h3 className="text-lg font-bold text-gray-800">
                     {t('orderNumber')} <span className="text-blue-600">#{selectedOrder.id.slice(-6)}</span>
@@ -379,17 +379,17 @@ export default function DashboardHome() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${statusColor(selectedOrder.status)}`}>
+                  <span className={`px-2 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase ${statusColor(selectedOrder.status)}`}>
                     {t(selectedOrder.status) || selectedOrder.status}
                   </span>
-                  <button onClick={() => setSelectedOrder(null)} className="p-1.5 hover:bg-gray-200 rounded-full transition-colors">
-                    <X size={18} />
+                  <button onClick={() => setSelectedOrder(null)} className="min-w-[40px] min-h-[40px] flex items-center justify-center hover:bg-gray-200 rounded-full transition-colors">
+                    <X size={20} />
                   </button>
                 </div>
               </div>
 
               {/* Items list */}
-              <div className="overflow-y-auto flex-1 p-6">
+              <div className="p-5 sm:p-6 overflow-y-auto flex-1">
                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">{t('items')}</h4>
                 <ul className="space-y-2">
                   {(selectedOrder.items || []).map((item, idx) => {
@@ -422,14 +422,14 @@ export default function DashboardHome() {
               </div>
 
               {/* Modal footer with live total */}
-              <div className="px-6 py-4 border-t bg-gray-50 flex justify-between items-center">
-                <span className="font-semibold text-gray-600">{t('total')} ({t('excludesCancelled')})</span>
+              <div className="p-5 sm:p-6 border-t bg-gray-50 flex justify-between items-center flex-shrink-0">
+                <span className="font-semibold text-gray-600">{t('total')} <span className="hidden sm:inline">({t('excludesCancelled')})</span></span>
                 <span className="text-xl font-bold text-emerald-600">
                   ₺ {calcLiveTotal(selectedOrder).toFixed(2)}
                 </span>
               </div>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
     </div>

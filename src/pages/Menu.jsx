@@ -572,41 +572,43 @@ export default function Menu() {
       {/* Feedback Modal */}
       <AnimatePresence>
         {showFeedback && (
-          <>
+          <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowFeedback(false)}
-              className="fixed inset-0 bg-black z-50"
+              className="absolute inset-0 bg-black backdrop-blur-sm"
             />
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-menu-surface/90 backdrop-blur-md border border-menu-border z-50 rounded-2xl shadow-2xl p-6 w-[95%] max-w-md text-menu-text"
+              className="relative z-10 w-[calc(100%-2rem)] mx-4 sm:w-full sm:max-w-lg sm:mx-auto bg-menu-surface/90 border border-menu-border rounded-2xl shadow-2xl text-menu-text overflow-hidden flex flex-col"
             >
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-menu-primary">{t('feedback')}</h3>
-                <button onClick={() => setShowFeedback(false)} className="p-2 hover:bg-[#2A2A2A] rounded-full text-menu-text-muted">
-                  <X size={20} />
+              <div className="p-5 sm:p-8 overflow-y-auto max-h-[90vh]">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold text-menu-primary">{t('feedback')}</h3>
+                  <button onClick={() => setShowFeedback(false)} className="min-w-[40px] min-h-[40px] flex items-center justify-center hover:bg-[#2A2A2A] rounded-full text-menu-text-muted">
+                    <X size={20} />
+                  </button>
+                </div>
+                <textarea
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  placeholder={t('feedbackPlaceholder')}
+                  className="w-full bg-menu-bg border border-menu-border rounded-lg p-3 min-h-[120px] text-menu-text focus:border-menu-primary focus:outline-none"
+                />
+                <button
+                  onClick={sendFeedback}
+                  disabled={!feedbackText.trim()}
+                  className="w-full bg-menu-primary hover:bg-menu-accent disabled:bg-[#2A2A2A] disabled:text-menu-text-muted text-menu-bg py-3 rounded-lg font-bold mt-4 transition-colors"
+                >
+                  {t('sendFeedback')}
                 </button>
               </div>
-              <textarea
-                value={feedbackText}
-                onChange={(e) => setFeedbackText(e.target.value)}
-                placeholder={t('feedbackPlaceholder')}
-                className="w-full bg-menu-bg border border-menu-border rounded-lg p-3 min-h-[120px] text-menu-text focus:border-menu-primary focus:outline-none"
-              />
-              <button
-                onClick={sendFeedback}
-                disabled={!feedbackText.trim()}
-                className="w-full bg-menu-primary hover:bg-menu-accent disabled:bg-[#2A2A2A] disabled:text-menu-text-muted text-menu-bg py-3 rounded-lg font-bold mt-4 transition-colors"
-              >
-                {t('sendFeedback')}
-              </button>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
 
@@ -866,22 +868,21 @@ export default function Menu() {
       {/* Product Detail Modal */}
       <AnimatePresence>
         {selectedProduct && (
-          <>
+          <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.6 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedProduct(null)}
-              className="fixed inset-0 bg-black z-50 backdrop-blur-sm"
+              className="absolute inset-0 bg-black backdrop-blur-sm"
             />
             <motion.div 
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed bottom-0 left-0 right-0 bg-menu-surface border-t border-menu-border z-50 rounded-t-3xl shadow-2xl max-h-[90vh] flex flex-col"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative z-10 w-[calc(100%-2rem)] mx-4 sm:w-full sm:max-w-lg sm:mx-auto bg-menu-surface border border-menu-border rounded-2xl shadow-2xl overflow-hidden flex flex-col"
             >
-               <div className="relative w-full h-64 bg-[#2A2A2A] rounded-t-3xl overflow-hidden shadow-inner">
+               <div className="relative w-full h-64 bg-[#2A2A2A] flex-shrink-0 shadow-inner">
                   {selectedProduct.imageUrl ? (
                      <img src={optimizeImage(selectedProduct.imageUrl, 800)} alt={selectedProduct.name} loading="lazy" className="w-full h-full object-cover" />
                   ) : (
@@ -889,13 +890,13 @@ export default function Menu() {
                         <UtensilsCrossed size={48} />
                      </div>
                   )}
-                  <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 p-2 bg-black/50 backdrop-blur-md rounded-full text-white hover:bg-black/70">
+                  <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 min-w-[40px] min-h-[40px] flex items-center justify-center bg-black/50 backdrop-blur-md rounded-full text-white hover:bg-black/70">
                     <X size={24} />
                   </button>
                   <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-menu-surface to-transparent"></div>
                </div>
 
-               <div className="p-6 flex-1 overflow-y-auto">
+               <div className="p-5 sm:p-8 overflow-y-auto max-h-[50vh]">
                  <div className="flex justify-between items-start mb-4">
                    <h2 className="text-3xl font-black text-menu-text leading-tight">{selectedProduct.name}</h2>
                    <span className="text-2xl font-bold text-menu-primary mt-1">₺{selectedProduct.price}</span>
@@ -904,9 +905,7 @@ export default function Menu() {
                  <p className="text-menu-text-muted text-base leading-relaxed tracking-wide font-light mb-8">
                    {selectedProduct.description || "Açıklama bulunmuyor."}
                  </p>
-               </div>
-               
-               <div className="p-6 border-t border-menu-border bg-menu-surface">
+                 
                  <button 
                     onClick={() => {
                       addToCart(selectedProduct);
@@ -918,78 +917,80 @@ export default function Menu() {
                  </button>
                </div>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
 
       {/* Order Confirmation Modal */}
       <AnimatePresence>
         {showOrderConfirmation && (
-          <>
+          <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.6 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowOrderConfirmation(false)}
-              className="fixed inset-0 bg-black z-50 backdrop-blur-sm"
+              className="absolute inset-0 bg-black backdrop-blur-sm"
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-md bg-menu-surface/90 backdrop-blur-md border border-menu-border z-50 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+              className="relative z-10 w-[calc(100%-2rem)] mx-4 sm:w-full sm:max-w-lg sm:mx-auto bg-menu-surface/90 border border-menu-border rounded-2xl shadow-2xl overflow-hidden flex flex-col"
             >
-               <div className="p-5 border-b border-menu-border flex justify-between items-center bg-[#2A2A2A]">
-                 <h2 className="text-xl font-bold text-menu-text flex items-center gap-2">
-                   <CheckCircle className="text-menu-primary" size={24} /> Siparişi Onayla
-                 </h2>
-                 <button onClick={() => setShowOrderConfirmation(false)} className="text-menu-text-muted hover:text-menu-text">
-                    <X size={24} />
-                 </button>
-               </div>
-               
-               <div className="p-5 overflow-y-auto flex-1 bg-menu-bg space-y-3">
-                 <h3 className="text-sm font-bold text-menu-text-muted uppercase tracking-wider mb-2">Sepet Özeti</h3>
-                 {cart.map((item, idx) => (
-                    <div key={idx} className="flex justify-between items-center border-b border-menu-border pb-2 last:border-0 last:pb-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-menu-primary bg-menu-primary/10 px-2 py-0.5 rounded text-sm">{item.quantity}x</span>
-                        <span className="font-medium text-menu-text">{item.name}</span>
-                      </div>
-                      <span className="text-menu-text-muted text-sm font-semibold">₺{(item.price * item.quantity).toFixed(2)}</span>
-                    </div>
-                 ))}
-               </div>
-
-               <div className="p-5 border-t border-menu-border bg-menu-surface">
-                 <div className="flex justify-between items-center mb-5 text-xl font-black text-menu-text">
-                   <span>Genel Toplam</span>
-                   <span className="text-menu-primary">₺{cartTotalInfo.total.toFixed(2)}</span>
+               <div className="p-5 sm:p-8 overflow-y-auto max-h-[90vh]">
+                 <div className="flex justify-between items-center mb-5 border-b border-menu-border pb-4">
+                   <h2 className="text-xl font-bold text-menu-text flex items-center gap-2">
+                     <CheckCircle className="text-menu-primary" size={24} /> Siparişi Onayla
+                   </h2>
+                   <button onClick={() => setShowOrderConfirmation(false)} className="min-w-[40px] min-h-[40px] flex items-center justify-center text-menu-text-muted hover:text-menu-text rounded-full hover:bg-menu-bg">
+                      <X size={24} />
+                   </button>
                  </div>
                  
-                 <button 
-                    onClick={() => {
-                      setShowOrderConfirmation(false);
-                      placeOrder();
-                    }}
-                    disabled={isSubmitting || orderStatus === 'sending'}
-                    className="w-full bg-menu-primary text-menu-bg py-4 rounded-xl font-bold text-lg shadow-[0_0_20px_rgba(var(--menu-primary-rgb),0.3)] hover:shadow-[0_0_30px_rgba(var(--menu-primary-rgb),0.5)] transition-all flex items-center justify-center gap-2"
-                 >
-                    {isSubmitting || orderStatus === 'sending' ? (
-                       <><Loader2 className="animate-spin" size={20} /> Onaylanıyor...</>
-                    ) : (
-                       <><CheckCircle size={20} /> Siparişi Onayla ve Gönder</>
-                    )}
-                 </button>
-                 <button 
-                    onClick={() => setShowOrderConfirmation(false)}
-                    className="w-full mt-3 py-3 rounded-xl font-bold text-menu-text-muted hover:text-menu-text hover:bg-menu-bg transition-colors"
-                 >
-                    Geri Dön
-                 </button>
+                 <div className="space-y-3 mb-6">
+                   <h3 className="text-sm font-bold text-menu-text-muted uppercase tracking-wider mb-2">Sepet Özeti</h3>
+                   {cart.map((item, idx) => (
+                      <div key={idx} className="flex justify-between items-center border-b border-menu-border pb-2 last:border-0 last:pb-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-menu-primary bg-menu-primary/10 px-2 py-0.5 rounded text-sm">{item.quantity}x</span>
+                          <span className="font-medium text-menu-text">{item.name}</span>
+                        </div>
+                        <span className="text-menu-text-muted text-sm font-semibold">₺{(item.price * item.quantity).toFixed(2)}</span>
+                      </div>
+                   ))}
+                 </div>
+
+                 <div className="pt-4 border-t border-menu-border">
+                   <div className="flex justify-between items-center mb-5 text-xl font-black text-menu-text">
+                     <span>Genel Toplam</span>
+                     <span className="text-menu-primary">₺{cartTotalInfo.total.toFixed(2)}</span>
+                   </div>
+                   
+                   <button 
+                      onClick={() => {
+                        setShowOrderConfirmation(false);
+                        placeOrder();
+                      }}
+                      disabled={isSubmitting || orderStatus === 'sending'}
+                      className="w-full bg-menu-primary text-menu-bg py-4 rounded-xl font-bold text-lg shadow-[0_0_20px_rgba(var(--menu-primary-rgb),0.3)] hover:shadow-[0_0_30px_rgba(var(--menu-primary-rgb),0.5)] transition-all flex items-center justify-center gap-2"
+                   >
+                      {isSubmitting || orderStatus === 'sending' ? (
+                         <><Loader2 className="animate-spin" size={20} /> Onaylanıyor...</>
+                      ) : (
+                         <><CheckCircle size={20} /> Siparişi Onayla ve Gönder</>
+                      )}
+                   </button>
+                   <button 
+                      onClick={() => setShowOrderConfirmation(false)}
+                      className="w-full mt-3 py-3 rounded-xl font-bold text-menu-text-muted hover:text-menu-text hover:bg-menu-bg transition-colors"
+                   >
+                      Geri Dön
+                   </button>
+                 </div>
                </div>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
 
